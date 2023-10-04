@@ -23,15 +23,15 @@ const float kCarrierFrequencyHigh = 3520.0;
 
 /* Pin Mappings */
 const int kModulationDepthPin = A9;
-const int kModulationRatioPin = A0;
+const int kDistortionLevelPin = A0;
 const int kChorusDepthPin = A8;
 const int kTremoloSpeedPin = D14;
 const int kTremoloOnPin = D13;
 
-const int kDistortionLevelPin = A3;
-const int kNoiseLevelPin = A6;
-const int kFilterFreqPin = A2;
-const int kFilterResonancePin = A7;
+const int kFilterFreqPin = A3;
+const int kFilterResonancePin = A6;
+const int kNoiseLevelPin = A2;
+const int kReverbLevelPin = A7;
 const int kVolumePin = A1;
 
 const int kForceSensorPin = A4;
@@ -114,6 +114,19 @@ static float filterScalar;
 const float kFilterFreqLow = 20.0f;
 const float kFilterFreqHigh = 24000.0f;
 
+/* Reverb Settings */
+static ReverbSc reverb;
+static Port reverbLevelPortamento;
+static float reverbLevel;
+static long reverbLevelReading;
+static CrossFade crossfadel, crossfader;
+
+/* Noise Settings */
+static WhiteNoise noise;
+static Port noiseLevelPortamento;
+static float noiseLevel;
+static long noiseLevelReading;
+
 void MyCallback(float **in, float **out, size_t size) 
 {
   float slewedVolumeLevel, slewedGain; 
@@ -122,6 +135,8 @@ void MyCallback(float **in, float **out, size_t size)
   float slewedDistortionLevel;
   float slewedTremoloFreq, slewedTremoloDepth, slewedTremoloWidth;
   float trem, treml, tremr;
+  float slewedReverbLevel;
+  float slewedNoiseLevel;
 
   for (size_t i = 0; i < size; i++) 
   {
@@ -141,18 +156,23 @@ void MyCallback(float **in, float **out, size_t size)
       slewedCarrierFreq = carrierPortamento.Process(previousCarrierFreq);
     }
 
-    slewedModulatorRatio = modulatorRatioPortamento.Process(modulatorRatio);
+    //slewedModulatorRatio = modulatorRatioPortamento.Process(modulatorRatio);
     slewedModulatorDepth = modulatorDepthPortamento.Process(modulatorDepth);
 
     slewedChorusDepth = chorusDepthPortamento.Process(chorusDepth);
 
     fmOsc.SetAmp(envelopeOut * slewedGain);
-    fmOsc.SetRatio(slewedModulatorRatio);
+    //fmOsc.SetRatio(slewedModulatorRatio);  // switched to fixed ratio
+    fmOsc.SetRatio(1.414214);
     fmOsc.SetDepth(slewedModulatorDepth);
     fmOsc.SetFreq(slewedCarrierFreq);
     fmOsc.SetWidth(slewedChorusDepth);
     sig = fmOsc.Process();
     
+    slewedNoiseLevel = noiseLevelPortamento.Process(noiseLevel);
+    noise.SetAmp(slewedNoiseLevel);
+    sig = sig + noise.Process() * 0.5 * slewedGain;
+
     slewedDistortionLevel = distortionLevelPortamento.Process(distortionLevel);
     distortion.SetDrive(slewedDistortionLevel);
     sig = distortion.Process(sig);
@@ -175,6 +195,19 @@ void MyCallback(float **in, float **out, size_t size)
     sig = sig * trem;
     sigl = sig * treml;
     sigr = sig * tremr;
+
+    slewedReverbLevel = reverbLevelPortamento.Process(reverbLevel);
+    reverb.SetFeedback(slewedReverbLevel);
+    float outl, outr;
+    reverb.Process(sigl, sigr, &outl, &outr);
+
+    crossfadel.SetPos(slewedReverbLevel);
+    crossfader.SetPos(slewedReverbLevel);
+
+    sigl = crossfadel.Process(sigl, outl);
+    sigr = crossfadel.Process(sigr, outr);
+    //sigl = sigl * (1 - slewedReverbLevel) + outl * slewedReverbLevel;
+    //sigr = sigr * (1 - slewedReverbLevel) + outr * slewedReverbLevel;
 
     out[0][i] = sigl * slewedVolumeLevel;
     out[1][i] = sigr * slewedVolumeLevel;
@@ -244,7 +277,7 @@ void setup() {
   
   carrierPortamento.Init(sampleRate, 0.01f);
   modulatorDepthPortamento.Init(sampleRate, 0.01);
-  modulatorRatioPortamento.Init(sampleRate, 0.01);
+  //modulatorRatioPortamento.Init(sampleRate, 0.01);
   chorusDepthPortamento.Init(sampleRate, 0.01);
 
   /* Envelope, Gain and Volume Initialization */
@@ -286,6 +319,22 @@ void setup() {
   filterRes = 0.0f;
   filterScalar = log2(kFilterFreqHigh / kFilterFreqLow);
 
+  /* Reverb Initialization */
+  reverb.Init(sampleRate);
+  reverb.SetFeedback(0.0f);
+  reverb.SetLpFreq(18000.0f);
+  reverbLevelPortamento.Init(sampleRate, 0.01);
+
+  crossfadel.Init();
+  crossfadel.SetCurve(CROSSFADE_CPOW);
+  crossfader.Init();
+  crossfader.SetCurve(CROSSFADE_CPOW);
+
+  /* Noise Initialization */
+  noise.Init();
+  noise.SetAmp(0.0f);
+  noiseLevelPortamento.Init(sampleRate, 0.01);
+
   DAISY.begin(MyCallback);
 }  // End setup()
 
@@ -307,8 +356,8 @@ void loop() {
   modulatorDepthReading = analogRead(kModulationDepthPin);
   modulatorDepth = modulatorDepthReading  / (float) kAdcMax;
 
-  modulatorRatioReading = analogRead(kModulationRatioPin); 
-  modulatorRatio = (modulatorRatioReading / (float) kAdcMax) + 1.0f;
+  //modulatorRatioReading = analogRead(kModulationRatioPin); 
+  //modulatorRatio = (modulatorRatioReading / (float) kAdcMax) + 1.0f;
 
   chorusDepthReading = analogRead(kChorusDepthPin);
   chorusDepth = (chorusDepthReading / (float) kAdcMax);
@@ -353,6 +402,13 @@ void loop() {
   filterResReading = analogRead(kFilterResonancePin);
   filterRes = (filterResReading / (float) kAdcMax);
 
+/* Reverb Readings */
+  reverbLevelReading = analogRead(kReverbLevelPin);
+  reverbLevel = reverbLevelReading / (float) kAdcMax;
+
+  /* Noise Reading */
+  noiseLevelReading = analogRead(kNoiseLevelPin);
+  noiseLevel = noiseLevelReading / (float) kAdcMax;
 
   if(kDebug)
   {
