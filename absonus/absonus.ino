@@ -419,25 +419,53 @@ void loop() {
       Serial.print("volumeLevel:");
       Serial.print(volumeLevel);
       Serial.print(",");
+
       Serial.print("gain:");
       Serial.print(gain);
       Serial.print(",");
+      
       Serial.print("modulatorDepth:");
       Serial.print(modulatorDepth);
       Serial.print(",");
+      
       Serial.print("modulatorRatio:");
       Serial.print(modulatorRatio);
       Serial.print(",");
+      
       Serial.print("chorusDepth:");
       Serial.print(chorusDepth);
       Serial.print(",");
-      Serial.print("tremoloFreq:");
-      Serial.print(tremoloFreq);
+      
+      Serial.print("tremoloOnReading:");
+      Serial.print(tremoloOnReading);
       Serial.print(",");
+      
+      Serial.print("tremoloSpeedReading:");
+      Serial.print(tremoloSpeedReading);
+      Serial.print(",");
+      
       Serial.print("filterFreq:");
       Serial.print(filterFreq);
       Serial.print(",");
 
+      Serial.print("distortionLevel:");
+      Serial.print(distortionLevel);
+      Serial.print(",");
+
+      Serial.print("reverbLevel:");
+      Serial.print(reverbLevel);
+      Serial.print(",");
+
+      Serial.print("noiseLevel:");
+      Serial.print(noiseLevel);
+      Serial.print(",");
+
+      Serial.print("filterFreq:");
+      Serial.print(filterFreq);
+      Serial.print(",");
+
+      Serial.print("carrierFreq:");
+      Serial.print(carrierFreq);
       Serial.println("");
     }
   }
