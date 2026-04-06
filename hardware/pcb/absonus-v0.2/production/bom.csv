@@ -1,0 +1,17 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+A1,Electrosmith_Daisy_Seed,1,Daisy_Seed_Rev4,
+"A2, A3",PinHeader_1x20_P2.54mm_Vertical,2,PinHeader_1x20_P2.54mm_Vertical,C2897383
+C1,CP_Elec_5x5.4,1,220uF,C3337
+"H1, H2, H3, H4",MountingHole_3.2mm_M3,4,M3,
+J1,JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal,1,i2c Qwiic,C160404
+J10,IDC-Header_2x05_P2.54mm_Vertical,1,2x5 IDC,C4749194
+J3,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,1,DC 5V,C158012
+J4,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,1,Pressure,C158012
+J5,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,1,SW1,C158012
+J6,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,1,SW2,C158012
+J7,JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,1,LED,C158012
+J8,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,1,Position,C144394
+J9,JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical,1,Audio Out,C144394
+R1,0603,1,10k,C15401
+R2,0603,1,3k,C4211
+U1,DIP787W45P254L927H533Q8,1,LS18-P,C5289485
