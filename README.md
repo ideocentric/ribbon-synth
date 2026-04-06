@@ -1,4 +1,4 @@
-# Absonus — Ribbon Synthesizer
+# absonus — Ribbon Synthesizer
 
 A touch-controlled FM ribbon synthesizer built on the [Electrosmith Daisy Seed](https://electro-smith.com/products/daisy-seed) platform. Pitch is controlled by a 150mm soft-pot ribbon sensor; expression by a force-sensitive resistor. A panel of knobs and switches shapes the FM synthesis, distortion, filter, tremolo, and reverb.
 
