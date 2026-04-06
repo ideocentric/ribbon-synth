@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "1048P")(type "KiCad")(uri "/Users/matt/Documents/GitHub/synths/daisy/ribbon-synth/pcb/battery-holder/1048P")(options "")(descr ""))
+)

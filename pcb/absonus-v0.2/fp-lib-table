@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "LS18-P")(type "KiCad")(uri "/Users/matt/Documents/KiCad/libraries/logiswitch/LS18-P")(options "")(descr ""))
+)
