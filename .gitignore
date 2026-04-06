@@ -134,3 +134,14 @@ $RECYCLE.BIN/
 #IDE
 .idea
 .vscode
+
+# KiCad backups and caches
+*-backups/
+production/backups/
+fp-info-cache
+*.kicad_sch-bak
+*.kicad_prl
+
+# FreeCAD and generic backups
+*.FCBak
+*.bak
