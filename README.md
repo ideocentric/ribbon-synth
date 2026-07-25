@@ -48,3 +48,7 @@ Open `firmware/absonus/absonus.ino` in Arduino IDE with the [DaisyDuino](https:/
 ## Hardware Verification
 
 Before troubleshooting from audio output, flash `firmware/sensor-test/sensor-test.ino` to the Daisy Seed immediately after assembly. It reads every pot, switch, force sensor, and soft-pot and streams their normalized values over serial (9600 baud, 100 ms interval). Use the Arduino Serial Plotter or any serial monitor to confirm each input responds correctly and is wired to the right pin before loading the main firmware.
+
+## Acknowledgments
+
+Portions of the firmware refactor, documentation, and repository organization were developed with the assistance of [Claude Code](https://claude.com/claude-code) (Anthropic).

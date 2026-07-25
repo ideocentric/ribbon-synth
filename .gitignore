@@ -145,3 +145,12 @@ fp-info-cache
 # FreeCAD and generic backups
 *.FCBak
 *.bak
+
+# LibreCAD / emacs-style autosave scratch files
+\#*
+
+# Slicer output (printer-specific: CE3V3SE = Ender 3 V3 SE)
+*.gcode
+
+# Firmware build + toolchain artifacts (C++ migration)
+firmware/**/build/
