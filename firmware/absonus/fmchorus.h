@@ -50,9 +50,11 @@
 #pragma once
 #ifndef IDFK_FM_H
 #define IDFK_FM_H
-#include "DaisyDuino.h"
+#include "daisysp.h"
 #include <stdint.h>
 #ifdef __cplusplus
+
+using namespace daisysp;
 
 namespace idfk
 {

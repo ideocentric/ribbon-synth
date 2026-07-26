@@ -15,8 +15,7 @@ float Cubicnl::Process(float in)
   sig = in + offset_;
   pregain = pow(10.0f, 2.0f * drive_);
   sig = sig * pregain;
-  sig = min(sig, 1.0f);
-  sig = max(sig, -1.0f);
+  sig = fclamp(sig, -1.0f, 1.0f);
   sig = sig - (sig*sig*sig)/3;
   sig = dcblocker_.Process(sig);
   postgain = 1.0 - 0.292 * fmap(drive_, 0.0f, 1.0f, Mapping::LINEAR);

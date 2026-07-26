@@ -42,10 +42,12 @@
 #pragma once
 #ifndef IDFK_TREMOR_H
 #define IDFK_TREMOR_H
-#include "DaisyDuino.h"
+#include "daisysp.h"
 #include "math.h"
 #include <stdint.h>
 #ifdef __cplusplus
+
+using namespace daisysp;
 
 namespace idfk
 {

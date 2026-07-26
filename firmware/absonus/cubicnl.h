@@ -38,9 +38,11 @@
 #pragma once
 #ifndef IDFK_CUBICNL_H
 #define IDFK_CUBICNL_H
-#include "DaisyDuino.h"
+#include "daisysp.h"
 #include "math.h"
 #ifdef __cplusplus
+
+using namespace daisysp;
 
 namespace idfk
 {
