@@ -137,24 +137,37 @@ An ADSR envelope (DaisySP `Adsr`) shapes the amplitude output of `FmChorus`. Gat
 
 ## Control Surface Pin Mapping
 
-| ADC Pin | Label | Function | Scaling |
-|:--|:--|:--|:--|
-| A0 | White | Distortion drive | Linear 0–1 |
-| A1 | Purple | Volume | Linear 0–1 |
-| A2 | Green | Noise level | Linear 0–1 |
-| A3 | Orange | Filter cutoff | Exponential 20–24000 Hz |
-| A4 | Pressure | FSR — gain + gate | Linear 0–1, threshold at 0.025 |
-| A5 | Ribbon | SoftPot — pitch | Exponential 55–3520 Hz |
-| A6 | Yellow | Filter resonance | Linear 0–1 |
-| A7 | Blue | Reverb level | Linear 0–1 |
-| A8 | Gray | Chorus width | Linear 0–1 |
-| A9 | Black | FM modulation depth | Linear 0–1 |
-| D13 | SW2 | Tremolo speed (slow/fast) | Digital |
-| D14 | SW1 | Tremolo on/off | Digital |
+Function and scaling are taken from the firmware (`absonus.cpp`). Physical routing is
+confirmed against the v0.3 board netlist: the 8 pots arrive on connector **J10** (2×5
+IDC ribbon), the FSR on **J4**, and the soft-pot on **J8**. Wire colors are the ribbon
+harness colors used by `sensor-test` (verify on hardware with `sensor-test` before
+trusting the color column — the crimp order is not captured in any file).
+
+| Daisy Pin | Connector | Wire / control | Function (firmware) | Scaling |
+|:--|:--|:--|:--|:--|
+| A0 | J10-9 | White | Distortion drive | Linear 0–1 |
+| A1 | J10-7 | Purple | Filter cutoff | Exponential 20–24000 Hz |
+| A2 | J10-5 | Green | Noise level | Linear 0–1 |
+| A3 | J10-3 | Orange | Volume | Linear 0–1 |
+| A4 | J10-4 | Yellow | Reverb level | Linear 0–1 |
+| A5 | J10-6 | Blue | Filter resonance | Linear 0–1, scaled ×1.8 into LadderFilter |
+| A6 | J10-8 | Gray | FM modulation depth | Linear 0–1 |
+| A7 | J10-10 | Black | Chorus width | Linear 0–1 |
+| A8 | J4 | Pressure (FSR) | Gain + gate | Linear 0–1 |
+| A9 | J8 | Soft-pot (ribbon) | Pitch (carrier freq) | Exponential 55–3520 Hz |
+| D13 | via U1 (LS18-P) | SW2 | Tremolo speed (slow/fast) | Digital |
+| D14 | via U1 (LS18-P) | SW1 | Tremolo on/off | Digital |
+
+Daisy pin aliases: A7 = DAC_OUT2 (pin 29), A8 = DAC_OUT1 (pin 30), A9 = SAI2_MCLK
+(pin 31). The two switches are debounced through the U1 LS18-P before reaching D13/D14.
 
 **Sensor thresholds:**
-- FSR: readings below 20 (raw) are floored to 0; gate opens above normalized 0.1
-- SoftPot: readings below 44 (raw) are floored to 0 to suppress idle noise
+- FSR (A8): raw readings below 20 are floored to 0; gate opens above normalized 0.1
+- Soft-pot (A9): raw readings below 44 are floored to 0 to suppress idle noise
+
+> **Note:** `docs/design-notes.md` currently lists a different (incorrect) pin map —
+> e.g. Pressure=A4, Ribbon=A5 — which the board netlist contradicts (Pressure=A8,
+> soft-pot=A9). Update design-notes.md to match this table.
 
 ---
 

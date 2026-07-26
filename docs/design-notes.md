@@ -1,27 +1,34 @@
 # Design Notes
 
-System has 3 potentiometers and 2 toggle switches in the top row.  Second row contains 5 potentiometers.  The third row has a a pressure sensor with a soft potentiometer layered on top of pressure sensor.  Layout of pots, switches and strips are as follows:
+System has 3 potentiometers and 2 toggle switches in the top row.  The second row contains 5 potentiometers.  The third row has a pressure sensor with a soft potentiometer layered on top of it.
+
+Functions and pins below are taken from the firmware (`firmware/absonus/absonus.cpp`) and verified against the v0.3 board (`hardware/pcb/absonus-v0.2`): the 8 pots arrive on connector **J10** (2×5 IDC ribbon — the wire number equals the J10 pin), the FSR on **J4** (A8), and the soft-pot on **J8** (A9). See also [Firmware Architecture — Control Surface Pin Mapping](firmware-architecture.md#control-surface-pin-mapping).
+
+> The wire colors are board-confirmed (ribbon wire number = J10 pin). The **function
+> labels** come from the firmware; if a knob's on-panel silkscreen disagrees with the
+> function shown here, flash `sensor-test` and confirm — the firmware assignment is the
+> source of truth.
 
 Row 1:
 
-| Modulation | Distortion | Chorus Width |  Tremolo Speed| Tremolo On |
+| Chorus Width | Distortion | FM Mod Depth | Tremolo Speed | Tremolo On |
 |:--|:--|:--|:--|:--|
-| 10 - Black | 9 - White | 8 - Gray | SW1 | SW2 |
-| A9 | A0 | A8 | D14 | D13 |
+| 10 - Black | 9 - White | 8 - Gray | SW2 | SW1 |
+| A7 | A0 | A6 | D13 | D14 |
 
 Row 2:
 
-| Filter Cutoff | Filter Resonance | Noise | Reverb | Volume |
+| Volume | Reverb | Noise | Filter Resonance | Filter Cutoff |
 |:--|:--|:--|:--|:--|
 | 3 - Orange | 4 - Yellow | 5 - Green | 6 - Blue | 7 - Purple |
-| A3 | A6 | A2 | A7 | A1 |
+| A3 | A4 | A2 | A5 | A1 |
 
 Touch Sensors:
 
 | Frequency | Pressure |
 |:--|:--|
-| Soft Pot | Gain |
-| A5 | A4 |
+| Soft Pot (J8) | Gain (J4) |
+| A9 | A8 |
 
 Tremolo switches function like a Leslie speaker.  When enabled the speed of the tremolo ramps up to the current speed selection.  The target frequency, depth and stereo width is indicated in the table below:
 
@@ -49,24 +56,24 @@ Daisy Seed Pin Mappings:
 |11 | D10 |  |  |
 |12 | D11 |  |  |
 |13 | D12 |  |  |
-|14 | D13 | | SW2 |  |
-|15 | D14 | | SW1 |  |
+|14 | D13 | | Tremolo Speed (SW2) | via U1 LS18-P debouncer |
+|15 | D14 | | Tremolo On/Off (SW1) | via U1 LS18-P debouncer |
 |16 | in[0][SIZE] |  |  |
 |17 | in[1][SIZE] |  |  |
 |18 | out[0][SIZE] |  |  |
 |19 | out[1][SIZE] |  |  |
 |20 | AGND |  |  |
 |21 | 3v3 Analog |  |  |
-|22 | A0/D15 | ADC0 | White |  |
-|23 | A1/D16 | ADC1 | Purple |  |
-|24 | A2/D17 | ADC2 | Green |  |
-|25 | A3/D18 | ADC3 | Orange |  |
-|26 | A4/D19 | ADC4 | Pressure | 3k Ohm Pulldown |
-|27 | A5/D20 | ADC5 | Ribbon | 10k Ohm Pulldown |
-|28 | A6/D21 | ADC6 | Yellow |  |
-|29 | A7/D22 | ADC7/DAC OUT 2 | Blue |  |
-|30 | A8/D23 | ADC8/DAC OUT 1 | Gray |  |
-|31 | A9/D24 | ADC9 | Black |  |
+|22 | A0/D15 | ADC0 | White (J10-9) | Distortion |
+|23 | A1/D16 | ADC1 | Purple (J10-7) | Filter cutoff |
+|24 | A2/D17 | ADC2 | Green (J10-5) | Noise |
+|25 | A3/D18 | ADC3 | Orange (J10-3) | Volume |
+|26 | A4/D19 | ADC4 | Yellow (J10-4) | Reverb |
+|27 | A5/D20 | ADC5 | Blue (J10-6) | Filter resonance |
+|28 | A6/D21 | ADC6 | Gray (J10-8) | FM modulation depth |
+|29 | A7/D22 | ADC7/DAC OUT 2 | Black (J10-10) | Chorus width |
+|30 | A8/D23 | ADC8/DAC OUT 1 | Pressure / FSR (J4) | Gain + gate; 10k pulldown (R1) |
+|31 | A9/D24 | ADC9 | Soft-pot / ribbon (J8) | Pitch; 3k pulldown (R2) |
 |32 | A10/D25 | ADC10 |  |  |
 |33 | D26 |  |  |  |
 |34 | D27 |  |  |  |
@@ -101,6 +108,6 @@ The general design of the instrument is based on a simple FM synthesis.  The mod
 
 Distortion is implemented using Julius O. Smith’s cubicnl.dsp algorithm from Faust ported to the Daisy Seed here.
 
-The Moog Ladder Filter, White Noise and the SCReverb are standard Daisy Seed modules are used here without modification.
+The filter, white noise, and reverb are DaisySP modules. In the C++ build the filter is DaisySP `LadderFilter` (the older `MoogLadder` was removed in the DaisySP LGPL split), white noise is `WhiteNoise`, and the Sean Costello reverb (`ReverbSc`, also removed upstream) is vendored into the project. See [firmware-architecture.md](firmware-architecture.md).
 
 One of the initial challenges was to evaluate and map the Soft Pot and Force Sensors.  The Soft Pot is a bit noisy when idle and the full reading needs to be mapped to a usable range.  Additionally, the gate release locks the last set frequency  in order to prevent a fall off to the lowest frequency.  This allows for extending the release time of an envelope.
