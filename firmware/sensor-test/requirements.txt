@@ -1,0 +1,5 @@
+# Python deps for plot_sensors.py — install into the project-local venv:
+#   python3 -m venv .venv        (from the repo root)
+#   .venv/bin/pip install -r firmware/sensor-test/requirements.txt
+pyserial>=3.5
+matplotlib>=3.8
