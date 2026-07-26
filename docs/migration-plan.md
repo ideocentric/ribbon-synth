@@ -13,13 +13,14 @@ firmware from the Arduino IDE (DaisyDuino) to a native C++ toolchain.
 
 ---
 
-## ▶ RESUME HERE (status as of 2026-07-25)
+## ▶ RESUME HERE (status as of 2026-07-26)
 
-**Everything below Phase 0 is DONE-and-building but UNCOMMITTED**, held until the
-firmware is verified on real hardware. Nothing pending needs code work — the next
-actions are hardware + a commit.
+**Phase 1 work is committed on branch `cpp-migration`** (4 commits, all building),
+kept off `main` until verified on real hardware. Next actions are hardware + merge.
 
-**Committed:** only Phase 0 cleanup (`5b47291`). HEAD is on `main`.
+**Committed:** Phase 0 cleanup on `main` (`5b47291`); Phase 1 on `cpp-migration`
+(`84738dd` submodules, `c9b7b25` sensor-test, `25bfe98` absonus, `75035ca` tooling).
+Work here on `cpp-migration`; merge to `main` after verification.
 
 **Built & working (not yet flashed):**
 - `firmware/sensor-test/` → C++ port + CMake, builds `.elf/.hex/.bin`.
@@ -30,20 +31,16 @@ actions are hardware + a commit.
 - Dev tooling: `program`/`program-dfu` targets, `firmware/.vscode/` debug configs,
   `firmware/sensor-test/plot_sensors.py` + repo-root `.venv`.
 
-**Next actions when you resume:**
+**Next actions when you resume (on `cpp-migration`):**
 1. Flash `sensor-test` (`cd firmware/sensor-test && cmake -B build && cmake --build build
    && cmake --build build --target program`), plot with `plot_sensors.py`, confirm all
    12 inputs. Then flash `absonus`, A/B the audio vs. the Arduino build.
-2. If good: remove the now-obsolete `absonus.ino` + `sensor-test.ino`, then **commit
-   Phase 1** (submodules + both ports + tooling) to `main`.
-3. Do **Phase 2 — Documentation** (fix the stale pin table, update build instructions).
+2. If good: remove the now-obsolete `absonus.ino` + `sensor-test.ino` (commit), do
+   **Phase 2 — Documentation** (fix stale pin table, update build instructions), then
+   **merge `cpp-migration` → `main`**.
 
-**Uncommitted working tree:** modified `.gitignore`, `docs/migration-plan.md`,
-module headers (`fmchorus.h`/`cubicnl.h`/`tremor.h`/`cubicnl.cpp`); new `.gitmodules`,
-`firmware/libDaisy` + `firmware/DaisySP` submodules, `firmware/absonus/{absonus.cpp,
-CMakeLists.txt,port.*,reverbsc.*}`, `firmware/sensor-test/{sensor-test.cpp,CMakeLists.txt,
-plot_sensors.py,requirements.txt}`, `firmware/.vscode/{launch,tasks}.json`. The old
-`.ino` files are still tracked (remove after hardware verification).
+The old `.ino` files are still tracked (remove after hardware verification). Nothing
+else is uncommitted — the branch is clean.
 
 ---
 
