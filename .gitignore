@@ -133,7 +133,16 @@ $RECYCLE.BIN/
 
 #IDE
 .idea
-.vscode
+
+# VS Code: ignore local state, but keep the shared debug configs under firmware/.vscode/
+.vscode/
+!firmware/.vscode/
+firmware/.vscode/*
+!firmware/.vscode/launch.json
+!firmware/.vscode/tasks.json
+
+# Python virtual environment
+.venv/
 
 # KiCad backups and caches
 *-backups/

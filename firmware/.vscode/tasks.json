@@ -1,0 +1,23 @@
+{
+  // Build tasks used by launch.json's preLaunchTask. Debug build type gives -Og
+  // + debug symbols for clean stepping. Open `firmware/` as the workspace.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build absonus (Debug)",
+      "type": "shell",
+      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build",
+      "options": { "cwd": "${workspaceFolder}/absonus" },
+      "problemMatcher": ["$gcc"],
+      "group": "build"
+    },
+    {
+      "label": "build sensor-test (Debug)",
+      "type": "shell",
+      "command": "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build",
+      "options": { "cwd": "${workspaceFolder}/sensor-test" },
+      "problemMatcher": ["$gcc"],
+      "group": "build"
+    }
+  ]
+}

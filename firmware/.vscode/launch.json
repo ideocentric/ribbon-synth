@@ -1,0 +1,38 @@
+{
+  // Live debugging over the ST-Link V3 (SWD) with the Cortex-Debug extension.
+  // Open the `firmware/` folder as the VS Code workspace so ${workspaceFolder}
+  // resolves here. Requires: Cortex-Debug extension, OpenOCD, arm-none-eabi-gdb.
+  // Build first (the preLaunchTask does this) so the .elf exists.
+  //
+  // To add a peripheral register view, drop an STM32H750 .svd somewhere and set
+  // "svdFile" on each config (libDaisy does not bundle one).
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug absonus (ST-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/absonus/build/absonus.elf",
+      "device": "STM32H750IBKx",
+      "configFiles": ["interface/stlink.cfg", "target/stm32h7x.cfg"],
+      "runToEntryPoint": "main",
+      "preLaunchTask": "build absonus (Debug)",
+      "showDevDebugOutput": "none"
+    },
+    {
+      "name": "Debug sensor-test (ST-Link)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/sensor-test/build/sensor-test.elf",
+      "device": "STM32H750IBKx",
+      "configFiles": ["interface/stlink.cfg", "target/stm32h7x.cfg"],
+      "runToEntryPoint": "main",
+      "preLaunchTask": "build sensor-test (Debug)",
+      "showDevDebugOutput": "none"
+    }
+  ]
+}
