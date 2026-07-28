@@ -13,14 +13,16 @@ firmware from the Arduino IDE (DaisyDuino) to a native C++ toolchain.
 
 ---
 
-## ▶ RESUME HERE (status as of 2026-07-26)
+## ▶ RESUME HERE (status as of 2026-07-27)
 
-**Phase 1 work is committed on branch `cpp-migration`** (4 commits, all building),
-kept off `main` until verified on real hardware. Next actions are hardware + merge.
+**Phases 1 and 2 are code-complete on branch `cpp-migration`** (pushed to `origin`),
+kept off `main` until verified on real hardware. **Everything that remains needs the
+hardware in hand.**
 
-**Committed:** Phase 0 cleanup on `main` (`5b47291`); Phase 1 on `cpp-migration`
-(`84738dd` submodules, `c9b7b25` sensor-test, `25bfe98` absonus, `75035ca` tooling).
-Work here on `cpp-migration`; merge to `main` after verification.
+**Committed:** Phase 0 cleanup on `main` (`5b47291`, *not yet pushed* — `origin/main` is
+one behind); Phase 1 + 2 on `cpp-migration` (`84738dd` submodules, `c9b7b25` sensor-test,
+`25bfe98` absonus, `75035ca` VS Code tooling, `0094fba` CLion guide + OpenOCD config,
+`5731fa5` `firmware/README.md`, `966164a` pin tables, plus this doc pass).
 
 **Built & working (not yet flashed):**
 - `firmware/sensor-test/` → C++ port + CMake, builds `.elf/.hex/.bin`.
@@ -29,18 +31,25 @@ Work here on `cpp-migration`; merge to `main` after verification.
   `ReverbSc` (SDRAM).
 - Submodules: libDaisy `v8.1.0`, DaisySP `599511b`.
 - Dev tooling: `program`/`program-dfu` targets, `firmware/.vscode/` debug configs,
-  `firmware/sensor-test/plot_sensors.py` + repo-root `.venv`.
+  `firmware/openocd/daisy.cfg`, `firmware/sensor-test/plot_sensors.py` + repo-root `.venv`.
+- Docs: pin tables corrected against the v0.3 board; build instructions across
+  `README.md`, `docs/firmware-architecture.md`, and `firmware/README.md` now describe the
+  CMake/submodule flow.
 
 **Next actions when you resume (on `cpp-migration`):**
-1. Flash `sensor-test` (`cd firmware/sensor-test && cmake -B build && cmake --build build
-   && cmake --build build --target program`), plot with `plot_sensors.py`, confirm all
-   12 inputs. Then flash `absonus`, A/B the audio vs. the Arduino build.
-2. If good: remove the now-obsolete `absonus.ino` + `sensor-test.ino` (commit), do
-   **Phase 2 — Documentation** (fix stale pin table, update build instructions), then
-   **merge `cpp-migration` → `main`**.
+1. **(hardware)** Flash `sensor-test` (`cd firmware/sensor-test && cmake -B build
+   -DCMAKE_BUILD_TYPE=Release && cmake --build build && cmake --build build --target
+   program`), plot with `plot_sensors.py`, confirm all 12 inputs.
+2. **(hardware)** Flash `absonus`, A/B the audio vs. the last Arduino build. Listen
+   especially for the `LadderFilter` resonance sweep and reverb tail (both are
+   replacements, not the original modules).
+3. If good: remove the now-obsolete `firmware/absonus/absonus.ino` +
+   `firmware/sensor-test/sensor-test.ino` (still tracked; `archive/firmware/` preserves
+   the Arduino-era lineage), commit.
+4. **Merge `cpp-migration` → `main`**, then push `main` (it still carries the unpushed
+   `5b47291`).
 
-The old `.ino` files are still tracked (remove after hardware verification). Nothing
-else is uncommitted — the branch is clean.
+The branch is clean apart from the old `.ino` files awaiting step 3.
 
 ---
 
@@ -130,10 +139,9 @@ firmware/
       namespace). ~395 KB buffer placed in SDRAM via `DSY_SDRAM_BSS`.
 - [x] Builds clean: `absonus.elf/.hex/.bin` — FLASH 80.8% (105.9 KB/128 KB), SDRAM 0.59%.
 - [ ] **(hardware step)** Flash via DFU; A/B the audio against the last Arduino build.
-- [ ] **DECISION — ADC pin map (for docs, Phase 2).** Verify pin→function against
-  `assets/absonus-v0.3-schematic.pdf`. Derived map (from `absonus.ino` + `sensor-test`,
-  both self-consistent): A0 distortion, A1 filterFreq, A2 noise, A3 volume, A4 reverb,
-  A5 filterRes, A6 modDepth, A7 chorus, A8 force, A9 softpot.
+- [x] **DECISION — ADC pin map (for docs, Phase 2).** → **Settled and verified against the
+  v0.3 board** in `966164a`: A0 distortion, A1 filterFreq, A2 noise, A3 volume, A4 reverb,
+  A5 filterRes, A6 modDepth, A7 chorus, A8 force, A9 softpot. Docs now match the code.
 - [ ] **(cleanup)** Remove `absonus.ino` + `sensor-test.ino` once both `.cpp` builds are
   hardware-verified.
 
@@ -170,12 +178,16 @@ cmake --build build --target program
 
 ## Phase 2 — Documentation
 
-- [ ] **Fix the stale pin table** in `docs/firmware-architecture.md` (lines ~140–153).
-  It contradicts the code (`absonus.ino:26-39`). Regenerate from the settled Phase 1b
-  `AdcChannelConfig` table so code and docs share one source.
-- [ ] Update **Build** sections in `README.md` and `firmware-architecture.md` from
-  "Arduino IDE + DaisyDuino" to the CMake / submodule flow.
-- [ ] Add `firmware/README.md` with submodule-init + build/flash commands.
+- [x] **Fix the stale pin table** in `docs/firmware-architecture.md` and `design-notes.md`
+  (`966164a`). Corrected against the v0.3 board (`absonus-v0.2.kicad_pcb/.kicad_sch`) and
+  the firmware: 8 pots on A0–A7 via J10, FSR on A8 (J4), soft-pot on A9 (J8).
+- [x] Update **Build** sections in `README.md` and `firmware-architecture.md` from
+  "Arduino IDE + DaisyDuino" to the CMake / submodule flow. Also refreshed the repo-tree
+  listing and the stale `MoogLadder` / `Port` module references (both were replaced in the
+  C++ build) so the docs match the code.
+- [x] Add `firmware/README.md` with submodule-init + build/flash commands (`5731fa5`).
+- [x] Add `docs/clion-hardware-workflow.md` + `firmware/openocd/daisy.cfg` (`0094fba`) —
+  not originally planned; added while setting up the hardware workflow.
 
 ---
 

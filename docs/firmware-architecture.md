@@ -1,6 +1,6 @@
 # Absonus Firmware Architecture
 
-Firmware for the Absonus ribbon synthesizer. Written in C++ for the Electrosmith Daisy Seed using the DaisyDuino Arduino framework and the DaisySP DSP library.
+Firmware for the Absonus ribbon synthesizer. Written in C++ for the Electrosmith Daisy Seed against libDaisy and the DaisySP DSP library, built with CMake.
 
 Source: `firmware/absonus/`
 
@@ -31,7 +31,7 @@ FSR (pressure)   ──► gain + gate
                              distortionLevel ──► Cubicnl (cubic waveshaper)
                                                 │
                                                 ▼
-                   filterFreq ──► MoogLadder Filter ◄── filterRes
+                   filterFreq ──► LadderFilter (LP24) ◄── filterRes
                                                 │
                                                 ▼
                                           ┌─────────┐
@@ -108,13 +108,16 @@ Slow-to-fast rate transition uses a long portamento time (4 seconds) on `tremolo
 
 ---
 
-### MoogLadder, ReverbSc, WhiteNoise
+### LadderFilter, ReverbSc, WhiteNoise
 
-Standard DaisySP modules used without modification.
+`LadderFilter` and `WhiteNoise` are stock DaisySP modules used without modification.
+`ReverbSc` was removed from DaisySP in the LGPL split and is vendored into
+`firmware/absonus/reverbsc.{h,cpp}` (`idfk` namespace); its ~395 KB buffer lives in
+external SDRAM via `DSY_SDRAM_BSS`.
 
 | Module | Control | Range | Notes |
 |:--|:--|:--|:--|
-| MoogLadder | Cutoff knob (A1\*), Res knob (A5\*) | 20–24000 Hz / 0.0–1.0 | Exponential frequency mapping |
+| LadderFilter | Cutoff knob (A1\*), Res knob (A5\*) | 20–24000 Hz / 0.0–1.0 | LP24 mode; exponential frequency mapping. Replaces the removed `MoogLadder`; the 0–1 knob is scaled ×1.8 (`kFilterResMax`) to reach self-oscillation |
 | ReverbSc | Reverb knob (A4\*) | 0.0–1.0 | LP cutoff fixed at 18 kHz; level controls feedback AND dry/wet crossfade |
 | WhiteNoise | Noise knob (A2\*) | 0.0–1.0 | Amplitude scaled by ×0.5 × gain |
 
@@ -173,7 +176,7 @@ Daisy pin aliases: A7 = DAC_OUT2 (pin 29), A8 = DAC_OUT1 (pin 30), A9 = SAI2_MCL
 
 ## Portamento Times
 
-All control parameters are slewed through a `Port` object to eliminate ADC stepping noise. Times below are the slew time constants (seconds to reach ~63% of target).
+All control parameters are slewed through a `Port` object (a local one-pole reimplementation in `firmware/absonus/port.{h,cpp}`, `idfk` namespace — DaisySP's `Port` was removed in the LGPL split) to eliminate ADC stepping noise. Times below are the slew time constants (seconds to reach ~63% of target).
 
 | Parameter | Slew Time |
 |:--|:--|
@@ -195,8 +198,23 @@ All control parameters are slewed through a `Port` object to eliminate ADC stepp
 
 ## Build
 
-Open `firmware/absonus/absonus.ino` in Arduino IDE with the [DaisyDuino](https://github.com/electro-smith/DaisyDuino) board package installed. Select **Daisy Seed** as the target board and upload via the Daisy boot-loader.
+Standalone CMake project. Requires `arm-none-eabi-gcc`, `cmake` (≥3.26), and `dfu-util` or `openocd`.
+
+```bash
+git submodule update --init --recursive        # first time only
+cd firmware/absonus
+cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build
+
+cmake --build build --target program-dfu       # USB DFU: hold BOOT, tap RESET, then flash
+cmake --build build --target program           # ST-Link V3 over SWD (also the debug path)
+```
+
+Release is required for glitch-free real-time audio. Watch the `FLASH:` line — it must stay
+under 128 KB. Full quickstart: [`firmware/README.md`](../firmware/README.md); CLion
+walkthrough: [`clion-hardware-workflow.md`](clion-hardware-workflow.md).
 
 ### Dependencies
-- [DaisyDuino](https://github.com/electro-smith/DaisyDuino) (includes DaisySP)
-- All custom DSP modules (`FmChorus`, `Cubicnl`, `Tremor`) are self-contained in the sketch folder.
+- [libDaisy](https://github.com/electro-smith/libDaisy) `v8.1.0` — git submodule at `firmware/libDaisy/`
+- [DaisySP](https://github.com/electro-smith/DaisySP) (main, `599511b`) — git submodule at `firmware/DaisySP/`
+- Custom DSP modules (`FmChorus`, `Cubicnl`, `Tremor`) and the locally-provided `Port` /
+  `ReverbSc` are self-contained in `firmware/absonus/`.
